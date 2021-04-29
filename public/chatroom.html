@@ -5,14 +5,17 @@
     <link rel="stylesheet" href="/css/chatroom-style.css" />
   </head>
   <body>
-    <h1>Welcome to TALKATIVE</h1>
+    <h1>Hello World</h1>
     <div>
-      <h3>Enter Chatroom Name</h3>
-      <form class="portal-form">
+      <h2>Room: <span id="room-name"></span></h2>
+      <div class="message-board"></div>
+      <form class="chat-form">
         <input type="text" />
         <input type="submit" value="enter" />
       </form>
     </div>
-    <script src="/js/portal.js"></script>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/ws.js"></script>
   </body>
 </html>

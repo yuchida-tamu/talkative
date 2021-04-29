@@ -1,13 +1,30 @@
-// //mesage class
-// class Message extends HTMLElement {
-//   constructor() {
-//     super();
-//     const wrapper = document.createElement('div');
-//     wrapper.setAttribute('class', 'message'); //set the classname as message
-//     const content = document.createElement('p').innerText(text); //set the inner text of <p> and attach it to the wrapper
-//     wrapper.appendChild(content);
-//   }
-// }
+class Message {
+  constructor(content, author) {
+    this.content = content;
+    this.author = author;
+    this.html = createMessageElement(this.content);
+  }
+}
+
+class User {
+  constructor(id, username, email) {
+    this.id = id;
+    this.username = username;
+    this.email = email;
+  }
+
+  getUsernmae() {
+    return this.username;
+  }
+  getEmail() {
+    return this.email;
+  }
+  getId() {
+    return this.id;
+  }
+}
+
+const current_user = new User('testid1234', 'testuser', 'sample@example.com');
 
 const socket = io(); //only if the frontend is in the same domain as the back.
 
@@ -17,12 +34,13 @@ socket.on('connect', () => {
 
 socket.on('message', data => {
   console.log(data);
+  document.querySelector('#room-name').innerHTML = data;
 });
 
 socket.on('server_to_client', data => {
-  const message = document.createElement('div');
-  message.innerText = data;
-  appendMessageToBoard(message);
+  console.log(data);
+  const message = new Message(data.value, current_user.id);
+  appendMessageToBoard(message.html);
 });
 
 const messageBoard = document.querySelector('.message-board');
@@ -43,4 +61,14 @@ function sendMessage(text) {
 
 function appendMessageToBoard(messageElement) {
   messageBoard.appendChild(messageElement);
+}
+
+function createMessageElement(text) {
+  const wrapper = document.createElement('div');
+  wrapper.setAttribute('class', 'message');
+  const content = document.createElement('p');
+  content.setAttribute('class', 'message__content');
+  content.innerText = text;
+  wrapper.appendChild(content);
+  return wrapper;
 }
