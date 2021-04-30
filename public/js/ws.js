@@ -7,10 +7,11 @@ class Message {
 }
 
 class User {
-  constructor(id, username, email) {
+  constructor(id, username, email, mode) {
     this.id = id;
     this.username = username;
     this.email = email;
+    this.mode = mode; //ja: 1, en: 2
   }
 
   getUsernmae() {
@@ -22,9 +23,20 @@ class User {
   getId() {
     return this.id;
   }
+  getMode() {
+    return this.mode;
+  }
+  setMode(mode) {
+    this.mode = mode;
+  }
 }
 
-const current_user = new User('testid1234', 'testuser', 'sample@example.com');
+const current_user = new User(
+  'testid1234',
+  'testuser',
+  'sample@example.com',
+  2
+);
 
 const socket = io(); //only if the frontend is in the same domain as the back.
 
@@ -39,7 +51,7 @@ socket.on('message', data => {
 
 socket.on('server_to_client', data => {
   console.log(data);
-  const message = new Message(data.value, current_user.id);
+  const message = new Message(data, current_user.id);
   appendMessageToBoard(message.html);
 });
 
@@ -68,7 +80,7 @@ function createMessageElement(text) {
   wrapper.setAttribute('class', 'message');
   const content = document.createElement('p');
   content.setAttribute('class', 'message__content');
-  content.innerText = text;
+  content.innerHTML = text;
   wrapper.appendChild(content);
   return wrapper;
 }

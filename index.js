@@ -1,10 +1,20 @@
 import express from 'express';
 import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { dirname, resolve } from 'path';
 import http from 'http';
+import Translate from 'aws-sdk/clients/translate.js';
+import AWS from 'aws-sdk/global.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+/*AWS Translate configuration*/
+import { AWSCredentials, AWSRegion } from './keys/awsCredentials.js';
+AWS.config.update({
+  credentials: AWSCredentials,
+  region: AWSRegion,
+});
+const translateClient = new Translate(); //TODO use environment variables
 
 const PORT = process.env.PORT || 8080;
 
@@ -37,15 +47,36 @@ io.on('connection', socket => {
     console.log(data);
   });
 
-  socket.on('client_to_server', data => {
+  socket.on('client_to_server', async data => {
     console.log(data.value);
-    // sendMessageToClients(socket, data.value); //send the received message back to clients
-    sendMessageToRoom(io, roomId, data);
+    try {
+      const translated = await translateText(data.value, 'en', 'ja');
+      console.log('translate:', translated.TranslatedText);
+      sendMessageToRoom(io, roomId, translated.TranslatedText);
+    } catch (err) {
+      console.error('client to server', err);
+    }
   });
 });
 
-function sendMessageToClients(socket, text) {
-  socket.broadcast.emit('server_to_client', text);
+async function translateText(text, source, target) {
+  const params = {
+    Text: text,
+    SourceLanguageCode: source,
+    TargetLanguageCode: target,
+  };
+
+  return new Promise((resolve, reject) => {
+    try {
+      translateClient.translateText(params, (err, data) => {
+        if (err) reject(err);
+        if (data) resolve(data);
+      });
+    } catch (err) {
+      console.error('ERROR: translateText:', err);
+      return;
+    }
+  });
 }
 
 function sendMessageToRoom(io, roomId, text) {
